@@ -1,10 +1,16 @@
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
 
-int init_joystick(void);
+#include <linux/input.h>
 
-void exit_joystick(void);
+#define LOGITECH_VID 0x046d
 
-int load_unload();
+#define LOGITECH_3DPRO_PID 0xc215
+
+static int init_joystick(void);
+
+static int joystick_selector(struct input_handle *handle);
+
+static void exit_joystick(void);
 
 #endif
