@@ -4,10 +4,7 @@
 #include <linux/printk.h>
 #include <linux/input.h>
 
-// #include "../headers/joystick.h"
 
-// using the header to include this for some reason breaks this module,
-// and I don't know how to fix it except by including the code here
 #define LOGITECH_VID 0x046d
 #define LOGITECH_3DPRO_PID 0xc215
 static bool joystick_selector(struct input_handler *handler, struct input_dev * dev);
@@ -23,6 +20,7 @@ static const struct input_device_id joystick_ids[] = {
     { }
 };
 
+// data structure containing information on the devices managed by the driver
 MODULE_DEVICE_TABLE(input, joystick_ids);
 
 static struct input_dev * joystick_device;
@@ -51,16 +49,24 @@ static int __init init_joystick(void) {
   }
   joystick_device->name = "Logitech 3D Pro Driver";
   joystick_device->id.bustype = BUS_HOST;
-  
+
   // 3-axis joystick
   set_bit(ABS_X, joystick_device->absbit);
   set_bit(ABS_Y, joystick_device->absbit);
   set_bit(ABS_Z, joystick_device->absbit);
   set_bit(EV_ABS, joystick_device->evbit);
   set_bit(EV_KEY, joystick_device->evbit);
-  set_bit(BTN_1, joystick_device->keybit);
-  set_bit(BTN_1, joystick_device->keybit);
-  
+  set_bit(Joystick_Button0, joystick_device->keybit); // trigger
+  set_bit(Joystick_Button1, joystick_device->keybit); // thumb button
+
+  // HOS buttons
+  set_bit(Joystick_Button2, joystick_device->keybit);
+  set_bit(Joystick_Button2, joystick_device->keybit);
+  set_bit(Joystick_Button2, joystick_device->keybit);
+  set_bit(Joystick_Button2, joystick_device->keybit);
+
+
+
   // setting ranges
   input_set_abs_params(joystick_device, ABS_X, -32767, 32767, 0, 0);
   input_set_abs_params(joystick_device, ABS_Y, -32767, 32767, 0, 0);
@@ -71,13 +77,13 @@ static int __init init_joystick(void) {
     input_free_device(joystick_device);
     return -ENODEV;
   }
-  
+
   // if device registered, register its input handler
   if (input_register_handler(&joystick_handler)) {
 	  input_free_device(joystick_device);
 	  return -ENODEV;
 	}
-	  
+
   printk(KERN_INFO"Joystick device registered.\n");
   return 0;
 }
@@ -88,7 +94,7 @@ static bool joystick_selector(struct input_handler *handler, struct input_dev * 
 	printk(KERN_INFO"Device inserted.\n");
 	pr_info("Vendor ID: %04x", dev->id.vendor);
     pr_info("Product ID: %04x", dev->id.product);
-    
+
     if (dev->id.vendor == LOGITECH_VID && dev->id.product == LOGITECH_3DPRO_PID) {
         printk(KERN_INFO"Joystick device recognized.\n");
         return true;
@@ -99,9 +105,9 @@ static bool joystick_selector(struct input_handler *handler, struct input_dev * 
 
 
 static void joystick_event(struct input_handle *handler, unsigned int type, unsigned int code, int value) {
-	
-	printk(KERN_INFO"Joystick event recognized.\n");
+
 	if (type == EV_KEY) {
+    printk(KERN_INFO"Joystick event recognized.\n");
         switch (code) {
             case BTN_TRIGGER:
                 if (value == 1) {
@@ -112,7 +118,7 @@ static void joystick_event(struct input_handle *handler, unsigned int type, unsi
                 break;
             case BTN_THUMB:
                 if (value == 1) {
-      
+
                     printk(KERN_INFO "Joystick thumb button pressed\n");
                 } else {
 
@@ -127,7 +133,7 @@ static void joystick_event(struct input_handle *handler, unsigned int type, unsi
 
 static int joystick_connect(struct input_handler *handler, struct input_dev *dev, const struct input_device_id *id) {
   // placeholder
-    return 0; 
+    return 0;
 }
 
 
